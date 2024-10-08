@@ -2,21 +2,17 @@ class ReservationsController < ApplicationController
   def create
     # TODO: idealy calculated elswhere
     start_time = DateTime.parse(reservations_params.fetch(:start_time))
-    duration = reservations_params.fetch(:duration)
-    duration_timerange = (start_time..start_time + duration.to_i.minutes)
+    duration_param = reservations_params.fetch(:duration)
 
-    reservation = ActiveRecord::Base.transaction do # in the synchronic way, we assume a valid reservation creation must have successfully assigned tables
-      Reservation.create!(
-        restaurant_id: reservations_params.fetch(:restaurant_id),
-        party_size: reservations_params.fetch(:party_size),
-        duration: duration_timerange
-      ).tap(&:assign_tables!)
-    end
+    duration = (start_time..start_time + duration_param.to_i.minutes)
+    restaurant_id = reservations_params.fetch(:restaurant_id)
+    party_size = reservations_params.fetch(:party_size)
 
-    if reservation
+    ActiveRecord::Base.transaction do # in the synchronic way, we assume a valid reservation creation must have successfully assigned tables
+      reservation = Reservation.create!(restaurant_id:, party_size:, duration:).tap(&:assign_tables!)
       render json: reservation, status: 201
-    else
-      render status: :unprocessable_entity
+    rescue Reservation::TableAssignmentError => e
+      render json: { error: e.message }, status: :unprocessable_entity
     end
   end
 
