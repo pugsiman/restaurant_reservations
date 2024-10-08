@@ -20,5 +20,22 @@ RSpec.describe 'Reservations', type: :request do
 
       expect(response).to have_http_status(:created)
     end
+
+    context 'when could not assign table' do
+      before do
+        Table.destroy_all
+      end
+
+      it 'returns an error' do
+        post '/reservations',
+             params: {
+               reservation: {
+                 restaurant_id: restaurant.id, start_time: arbitrary_date, duration: 40, party_size: 4
+               }
+             }, as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
   end
 end
