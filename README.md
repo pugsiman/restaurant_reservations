@@ -40,8 +40,7 @@ reservation = Reservation.create!(restaurant: Restaurant.last, party_size: 2,  d
 reservation.assign_tables!
 ```
 
-Alternatively, to test the application directly
-
+## Testing the application directly
 Span a server:
 
 `rails s`
@@ -53,7 +52,7 @@ Test endpoints using cURL e.g.:
 curl "localhost:3000/reservations/" -d '{"reservation":{"party_size":4, "restaurant_id":1, "duration":40, "start_time":"2024-10-07T05:12:40+00:00"}}' -X "POST" -H "Content-Type: application/json"
 ```
 
-`tables#index`
+`tables#index` (before, during, after)
 ```shell
 curl "localhost:3000/tables/occupied" -d '{"table":{"time":"2024-10-07T05:10:40+00:00"}}' -X "GET" -H "Content-Type: application/json"
 curl "localhost:3000/tables/occupied" -d '{"table":{"time":"2024-10-07T05:22:40+00:00"}}' -X "GET" -H "Content-Type: application/json" 
