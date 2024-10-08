@@ -5,7 +5,7 @@ module TableAssigners
     def initialize(party_size, duration, tables)
       @party_size = party_size
       @duration = duration
-      @tables = tables
+      @tables = tables.order(:capacity)
     end
 
     # NOTE: could be decoupled from rails specific logic

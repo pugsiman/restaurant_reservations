@@ -8,7 +8,7 @@ class Reservation < ApplicationRecord
   scope :during, ->(date) { where('duration @> ?::timestamp', date) }
 
   def assign_tables!(strategy = TableAssigners::FirstComeFirstServe)
-    table_to_assign = strategy.new(party_size, duration, Table.all.order(:capacity)).table_to_assign
+    table_to_assign = strategy.new(party_size, duration, restaurant.tables).table_to_assign
     raise TableAssignmentError if table_to_assign.nil?
 
     reservation_tables.create!(table: table_to_assign)
