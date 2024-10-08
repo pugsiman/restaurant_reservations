@@ -1,24 +1,13 @@
-# README
+## Database and Model diagram
+<img width="753" alt="image" src="https://github.com/user-attachments/assets/dbfb0384-e4b7-4bc3-81f3-f42f50e88d54">
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+## Design choices discussion
 
-Things you may want to cover:
+Description of some of the design choices I’ve encountered and why I’ve made them. I tried to stick to reasonable work time by simplifying when possible and cheap, but still made sure to detail how things could be changed or improved in further work.
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+1. I decided to merge start_time (datetime) and duration (int) into a duration range (daterange) in Reservation’s table to simplify logic, improve query performance, and reduce room for bad data/ erroneous states. As an API endpoint’s parameters they still exist per spec instructions. I also created a `timerange` Postgres range type.
+2. Use restaurant row to represent one unique restaurant (with its own business hours, tables, etc’). The idea is to support several restaurants under one table reservation app. It also leaves an opening to later introduce a multi-tenant architecture, which will make the app much more powerful and cost effective to scale.
+3. Instead of a restaurant’s own capacity field I decided that we can assume restaurant’s capacity to be measured by the capacity of the tables it has (so you can add/remove tables from a restaurant without also needing to update its capacity field each time), reducing the possibility for bad/stale data.
+4. Expressing the relationship between a Table and Reservation. Naive way through Table’s foreign key (reservation_id - “table has a reservation”). Problems: 1) Domain leak. Why does a table need to know about reservation? 2) Unnecessary writes into Table, possible race conditions, and locks. 3) No records of previous tables associations with reservations 4) Query performance.  Some of these could be alleviated with another naive approach of having tables_ids array saved on a reservation, but not all. Solution: express the relationship through a “join table” (reservation_tables), which will represent an association between a given reservation to its assigned tables.
+5. The above also simplifies the logic of locking and unlocking tables into a simple time comparison query (vs more time intensive alternatives like: queue, mutex, tables pool etc’), with the disadvantage of more strictness (for example, not supporting early “release” of table if party finishes eating in the restaurant early). Even so, it makes it easier to add such functionality later if desired.
+6. I implemented the naive first-come first-serve algorithm for the table assignment. It’s a greedy algorithm prioritizing reservations as they come and leaving as little unused capacity. Due to keeping with the time requirement I left it relatively simple, but given more time I would probably add a more involved implementation, like using simple combinatorics to support tables combinations (e.g. a party of 6 makes a reservation, but only a table of 2 and of 4 are available). The tradeoffs all revolve around resource intensity/performance vs potential capacity utilization of the tables. Another obvious thing to do would be to use queue/background jobs and work with batches instead of synchronously running the algorithm on every reservation creation, that way the algorithm is non-blocking.
