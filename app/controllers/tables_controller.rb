@@ -2,7 +2,8 @@ class TablesController < ApplicationController
   def index
     period = DateTime.parse(tables_params.fetch(:time))
     reservations_in_period = Reservation.during(period)
-    collection = ReservationTable.where(reservation: reservations_in_period).includes(:reservations).map do |reservation_table|
+
+    collection = ReservationTable.where(reservation: reservations_in_period).includes(:reservation).map do |reservation_table|
       {
         table_id: reservation_table.table_id,
         reservation_id: reservation_table.reservation_id,
