@@ -16,3 +16,47 @@ More nice things to do not mentioned:
 
 * Only allow to create reservations inside `business_hours`
 
+## Setting things up and running
+
+Easiest way to play around the data is to clone:
+
+`git clone git@github.com:pugsiman/restaurant_reservations.git`
+
+`cd restaurant_reservations`
+
+`bundle`
+
+Set up the database:
+
+`rails db:create db:migrate db:seed`
+
+from here you can log in to the console and play around
+
+`rails c`
+```ruby
+Table.all
+Reservations.all
+reservation = Reservation.create!(restaurant: Restaurant.last, party_size: 2,  duration: DateTime.parse('2024/5/5 11:00')..DateTime.parse('2024/5/5 12:00'))
+reservation.assign_tables!
+```
+
+Alternatively, to test the application directly
+
+Span a server:
+
+`rails s`
+
+Test endpoints using cURL e.g.:
+
+`reservations#create`
+```shell
+curl "localhost:3000/reservations/" -d '{"reservation":{"party_size":4, "restaurant_id":1, "duration":40, "start_time":"2024-10-07T05:12:40+00:00"}}' -X "POST" -H "Content-Type: application/json"
+```
+
+`tables#index`
+```shell
+curl "localhost:3000/tables/occupied" -d '{"table":{"time":"2024-10-07T05:10:40+00:00"}}' -X "GET" -H "Content-Type: application/json"
+curl "localhost:3000/tables/occupied" -d '{"table":{"time":"2024-10-07T05:22:40+00:00"}}' -X "GET" -H "Content-Type: application/json" 
+curl "localhost:3000/tables/occupied" -d '{"table":{"time":"2024-10-07T06:22:40+00:00"}}' -X "GET" -H "Content-Type: application/json"
+```
+
