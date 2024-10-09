@@ -10,6 +10,20 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: btree_gist; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION btree_gist; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION btree_gist IS 'support for indexing common datatypes in GiST';
+
+
+--
 -- Name: timerange; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -268,7 +282,7 @@ CREATE INDEX index_reservation_tables_on_table_id ON public.reservation_tables U
 -- Name: index_reservations_on_duration; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_reservations_on_duration ON public.reservations USING btree (duration);
+CREATE INDEX index_reservations_on_duration ON public.reservations USING gist (duration);
 
 
 --
